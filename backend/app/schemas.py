@@ -1,0 +1,27 @@
+﻿from __future__ import annotations
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel
+from pydantic import ConfigDict
+
+
+class ArticleBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    content: Optional[str] = None
+    url: str
+    author: Optional[str] = None
+    source_name: Optional[str] = None
+    published_at: Optional[datetime] = None
+
+
+class ArticleCreate(ArticleBase):
+    pass
+
+
+class ArticleResponse(ArticleBase):
+    id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

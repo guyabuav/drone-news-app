@@ -1,11 +1,13 @@
-﻿from sqlalchemy import create_engine
+﻿from pathlib import Path
+from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./drone_news.db")
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/drone_news.db")
 
 engine = create_engine(
     DATABASE_URL,

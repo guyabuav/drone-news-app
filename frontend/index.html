@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone News</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .status-message {
+            text-align: center;
+            color: white;
+            font-size: 1.1em;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 10px;
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .article-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9em;
+            text-align: center;
+            padding: 20px;
+            font-weight: 500;
+        }
+
+        .article-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            font-size: 0.85em;
+        }
+
+        .article-source {
+            background: #f0f0f0;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .article-date {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .article-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .article-description {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+
+        .article-author {
+            color: #999;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+        }
+
+        .article-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            align-self: flex-start;
+        }
+
+        .article-link:hover {
+            opacity: 0.9;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .pagination button {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+            color: #667eea;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f0f0f0;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚁 Drone News</h1>
+            <p>Latest worldwide drone-related news</p>
+        </div>
+
+        <div class="search-box">
+            <label for="searchInput" style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Search Articles</label>
+            <input
+                type="text"
+                class="search-input"
+                id="searchInput"
+                placeholder="Search articles by keyword..."
+                maxlength="200"
+            >
+        </div>
+
+        <div id="status"></div>
+        <div id="articles"></div>
+        <div id="pagination"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const DEFAULT_LIMIT = 50;
+        const FETCH_TIMEOUT = 5000;
+
+        let currentPage = 0;
+        let currentKeyword = '';
+        let totalArticles = 0;
+        let isLoading = false;
+        let currentAbortController = null;
+
+        const statusDiv = document.getElementById('status');
+        const articlesDiv = document.getElementById('articles');
+        const paginationDiv = document.getElementById('pagination');
+        const searchInput = document.getElementById('searchInput');
+
+        // Debounce search
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentKeyword = e.target.value;
+                currentPage = 0;
+                fetchArticles();
+            }, 300);
+        });
+
+        // Allow Enter key to search
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                currentKeyword = e.target.value;
+                currentPage = 0;
+                fetchArticles();
+            }
+        });
+
+        async function fetchArticles() {
+            if (isLoading) return;
+
+            try {
+                isLoading = true;
+                showLoading();
+
+                // Cancel previous request if any
+                if (currentAbortController) {
+                    currentAbortController.abort();
+                }
+
+                currentAbortController = new AbortController();
+                const timeoutId = setTimeout(() => currentAbortController.abort(), FETCH_TIMEOUT);
+
+                const skip = currentPage * DEFAULT_LIMIT;
+                const url = new URL(`${API_BASE_URL}/articles`);
+                url.searchParams.append('skip', skip);
+                url.searchParams.append('limit', DEFAULT_LIMIT);
+                if (currentKeyword) {
+                    url.searchParams.append('keyword', currentKeyword);
+                }
+
+                const response = await fetch(url, { signal: currentAbortController.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Validate response structure
+                if (!isValidResponse(data)) {
+                    throw new Error('Invalid API response structure');
+                }
+
+                totalArticles = data.total;
+
+                if (data.items.length === 0) {
+                    showEmpty();
+                } else {
+                    // Validate articles before rendering
+                    const validArticles = data.items.filter(article => {
+                        if (!article.title || !article.url) {
+                            console.warn('Skipping malformed article:', article);
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (validArticles.length === 0) {
+                        showEmpty();
+                    } else {
+                        renderArticles(validArticles);
+                        renderPagination(data.total);
+                        showStats(data.total, data.skip, data.limit);
+                    }
+                }
+            } catch (error) {
+                isLoading = false;
+                if (error.name === 'AbortError') {
+                    showError('Request timed out. Please try again.');
+                } else {
+                    showError(getErrorMessage(error));
+                }
+                console.error('Error fetching articles:', error);
+                return;
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function isValidResponse(data) {
+            return data &&
+                   Array.isArray(data.items) &&
+                   typeof data.total === 'number' &&
+                   typeof data.skip === 'number' &&
+                   typeof data.limit === 'number';
+        }
+
+        function getErrorMessage(error) {
+            if (error.message.includes('HTTP 404')) {
+                return 'API endpoint not found. Check backend configuration.';
+            }
+            if (error.message.includes('HTTP 502')) {
+                return 'Backend service temporarily unavailable.';
+            }
+            if (error.message.includes('HTTP 503')) {
+                return 'Server is temporarily down. Please try again later.';
+            }
+            if (error.message.includes('HTTP 500')) {
+                return 'Server error. Please try again later.';
+            }
+            if (error.message.includes('Failed to fetch')) {
+                return 'Cannot reach the backend. Make sure it is running at http://127.0.0.1:8000';
+            }
+            if (error.message.includes('Invalid API response')) {
+                return 'Received invalid data from server.';
+            }
+            return `Error: ${error.message}`;
+        }
+
+        function showLoading() {
+            statusDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading articles...</p></div>';
+            articlesDiv.innerHTML = '';
+            paginationDiv.innerHTML = '';
+        }
+
+        function showEmpty() {
+            statusDiv.innerHTML = '';
+            articlesDiv.innerHTML = `
+                <div class="empty-state">
+                    <h3>No articles found</h3>
+                    <p>${currentKeyword ? `No results for "${escapeHtml(currentKeyword)}". Try a different search.` : 'No drone news available. Check back later!'}</p>
+                </div>
+            `;
+            paginationDiv.innerHTML = '';
+        }
+
+        function showError(message) {
+            statusDiv.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+            articlesDiv.innerHTML = '';
+            paginationDiv.innerHTML = '';
+        }
+
+        function showStats(total, skip, limit) {
+            const start = skip + 1;
+            const end = Math.min(skip + limit, total);
+            statusDiv.innerHTML = `<div class="stats">Showing ${start}–${end} of ${total} articles</div>`;
+        }
+
+        function renderArticles(articles) {
+            articlesDiv.innerHTML = '<div class="articles-grid">' +
+                articles.map(article => createArticleCard(article)).join('') +
+            '</div>';
+        }
+
+        function createArticleCard(article) {
+            const date = formatDate(article.published_at);
+            const description = article.description || 'No description available';
+            const author = article.author ? `By ${article.author}` : 'Author unknown';
+
+            return `
+                <div class="article-card">
+                    <div class="article-image">
+                        📰 ${article.source_name || 'News'}
+                    </div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            ${article.source_name ? `<span class="article-source">${escapeHtml(article.source_name)}</span>` : ''}
+                            <span class="article-date">${date}</span>
+                        </div>
+                        <h3 class="article-title">${escapeHtml(article.title)}</h3>
+                        <p class="article-description">${escapeHtml(description)}</p>
+                        <p class="article-author">${escapeHtml(author)}</p>
+                        <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer" class="article-link">
+                            Read Full Article →
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString || typeof dateString !== 'string') {
+                return 'Date unknown';
+            }
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Date unknown';
+            }
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / DEFAULT_LIMIT);
+            if (totalPages <= 1) {
+                paginationDiv.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="pagination">';
+
+            if (currentPage > 0) {
+                html += `<button onclick="goToPage(${currentPage - 1})">← Previous</button>`;
+            }
+
+            const maxPages = 5;
+            const startPage = Math.max(0, currentPage - Math.floor(maxPages / 2));
+            const endPage = Math.min(totalPages, startPage + maxPages);
+
+            for (let i = startPage; i < endPage; i++) {
+                if (i === currentPage) {
+                    html += `<button class="active" aria-current="page">${i + 1}</button>`;
+                } else {
+                    html += `<button onclick="goToPage(${i})">${i + 1}</button>`;
+                }
+            }
+
+            if (currentPage < totalPages - 1) {
+                html += `<button onclick="goToPage(${currentPage + 1})">Next →</button>`;
+            }
+
+            html += '</div>';
+            paginationDiv.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            if (isLoading) return;
+            currentPage = page;
+            fetchArticles();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Load initial articles
+        fetchArticles();
+    </script>
+</body>
+</html>

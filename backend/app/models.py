@@ -1,6 +1,5 @@
-﻿from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, UniqueConstraint
-from sqlalchemy.sql import func
+﻿from datetime import datetime, timezone
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from app.database import Base
 
 
@@ -15,8 +14,4 @@ class Article(Base):
     author = Column(String(255), nullable=True)
     source_name = Column(String(255), nullable=True)
     published_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-
-    __table_args__ = (
-        UniqueConstraint("url", name="unique_article_url"),
-    )
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))

@@ -16,13 +16,15 @@ def test_create_article_and_get_articles(db_session):
         published_at=datetime(2024, 1, 1, 12, 0),
     )
 
-    saved_article = create_article(db_session, article)
+    saved_article, is_new = create_article(db_session, article)
+    assert is_new is True
     assert saved_article.id is not None
     assert saved_article.url == article.url
 
-    results = get_articles(db_session, keyword="delivery")
-    assert len(results) == 1
-    assert results[0].title == article.title
+    result = get_articles(db_session, keyword="delivery")
+    assert result["total"] == 1
+    assert len(result["items"]) == 1
+    assert result["items"][0].title == article.title
 
 
 def test_sync_articles_skips_duplicates(db_session, monkeypatch):

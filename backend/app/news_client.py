@@ -4,14 +4,9 @@ News client for fetching drone-related news from NewsAPI.org.
 
 import os
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
 
 import requests
-from dotenv import load_dotenv
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
 
 NEWS_API_BASE_URL = 'https://newsapi.org/v2/everything'
 

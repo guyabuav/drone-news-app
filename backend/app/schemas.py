@@ -16,10 +16,6 @@ class ArticleBase(BaseModel):
     published_at: Optional[datetime] = None
 
 
-class ArticleCreate(ArticleBase):
-    pass
-
-
 class ArticleResponse(ArticleBase):
     id: int
     created_at: datetime
@@ -32,3 +28,9 @@ class ArticlesPaginatedResponse(BaseModel):
     total: int
     skip: int
     limit: int
+
+
+class SyncResponse(BaseModel):
+    fetched: int
+    saved: int
+    duplicates: int

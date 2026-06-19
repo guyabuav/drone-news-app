@@ -3,11 +3,13 @@ News client for fetching drone-related news from NewsAPI.org.
 """
 
 import os
+import logging
 from datetime import datetime
 from typing import List, Optional
 
 import requests
 
+logger = logging.getLogger(__name__)
 NEWS_API_BASE_URL = 'https://newsapi.org/v2/everything'
 
 
@@ -21,6 +23,7 @@ def fetch_drone_news() -> List[dict]:
     """
     api_key = os.getenv('NEWS_API_KEY', '').strip()
     if not api_key:
+        logger.error('NEWS_API_KEY is missing')
         raise RuntimeError(
             'NEWS_API_KEY is missing. Please create a .env file based on .env.example.'
         )
@@ -29,15 +32,21 @@ def fetch_drone_news() -> List[dict]:
         'q': 'drone OR drones',
         'language': 'en',
         'sortBy': 'publishedAt',
-        'pageSize': 50,
+        'pageSize': 100,
         'apiKey': api_key,
     }
 
-    response = requests.get(NEWS_API_BASE_URL, params=params, timeout=10)
-    response.raise_for_status()
+    logger.info('Fetching drone news from NewsAPI...')
+    try:
+        response = requests.get(NEWS_API_BASE_URL, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Failed to fetch from NewsAPI: {e}')
+        raise
 
     data = response.json()
     if not isinstance(data, dict) or not isinstance(data.get('articles'), list):
+        logger.error(f'Unexpected NewsAPI response format: {data}')
         raise RuntimeError(f'Unexpected News API response format: {data}')
 
     articles = []
@@ -46,6 +55,7 @@ def fetch_drone_news() -> List[dict]:
         if normalized_article:
             articles.append(normalized_article)
 
+    logger.info(f'Fetched {len(articles)} drone articles from NewsAPI')
     return articles
 
 

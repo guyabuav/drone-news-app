@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+from unittest.mock import MagicMock
 
 from app import models
 from app.database import Base, get_db
@@ -40,6 +41,10 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
     def override_get_db() -> Generator[Session, None, None]:
         yield db_session
 
+    # Disable rate limiter for tests
+    app.state.limiter = MagicMock()
+    app.state.limiter.limit = lambda *args, **kwargs: lambda f: f
+
     app.dependency_overrides[get_db] = override_get_db
     test_client = TestClient(app)
     try:
@@ -47,3 +52,4 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
     finally:
         test_client.close()
         app.dependency_overrides.clear()
+
